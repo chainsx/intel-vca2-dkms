@@ -1,0 +1,158 @@
+.\" Manpage for vcactl
+.TH vcactl "1"
+.SH NAME
+.B Visual Compute Accelerator
+.SH SYNOPSIS
+    \fBvcactl\fR [\fIexecution_mode\fR] \fIcommand\fR [\fIsubcommand\fR] [card_id [cpu_id]] [command_params] [execution_mode]
+.SH DESCRIPTION
+.TP
+\fBstatus\fR
+shows status of the cpu
+.TP
+\fBreset\fR
+resets the cpu
+.TP
+\fBwait\fR
+waits for cpu to boot OS
+.TP
+\fBwait\-BIOS\fR
+waits for bios to be ready on desired cpu
+.TP
+\fBboot\fR vcablk<N>
+boot OS for cpu using VCA block device vcablk<N>
+Currently only booting from vcablk0 is supported.
+.TP
+\fBboot\fR [img_path | \-\-force\-last\-os\-image]
+boot OS for cpu using LBP
+If no img_path is provided, configuration field 'os\-image' is used.
+Is possible to use 'boot' command with \-\-force\-last\-os\-image parameter to boot directly from last\-os\-image field.
+.TP
+\fBreboot\fR [img_path]
+reboot last used OS
+If no img_path is provided, configuration field 'last\-os\-image' or 'os\-image' is used.
+.TP
+\fBupdate\-BIOS\fR <bios_img_path>
+update bios for the cpu.
+.TP
+\fBrecover\-BIOS\fR <bios_img_path>
+updates BIOS via gold bios image. Use in need of recovery. Works only with second generation VCA. May take much longer than standard BIOS update!
+.TP
+\fBget\-BIOS\-cfg\fR [bios_cfg_name]
+read BIOS configuration
+Avaiable configurations to read:
+ \- sgx
+ \- gpu\-aperture
+ \- tdp
+.TP
+\fBset\-BIOS\-cfg\fR <bios_cfg_name> <bios_cfg_value>
+change BIOS configuration
+Available configurations with their allowed values:
+ \- for 'sgx': enable, disable
+ \- for 'gpu\-aperture': 128, 256, 512, 1024, 2048, 4096
+ \- for 'tdp': 0 to 11, where 0 mean base value, 1 mean base + 1, etc.
+.TP
+\fBupdate\-MAC\fR <card_id> <cpu_id> <mac_addr>
+updates mac address of the cpu with desired value (only allowed as root)
+This command requires card id, cpu id and mac address.
+.TP
+\fBupdate\-EEPROM\fR <eeprom_file>
+update EEPROM for the card (only allowed as root)
+This command does not accept cpu_id parameter \- applies to all cpus on card
+.TP
+\fBclear\-SMB\-event\-log\fR
+clear SMB event log for the cpu
+.TP
+\fBscript\fR
+set script parameter in configuration
+.TP
+\fBconfig\-show\fR
+shows config for cpu
+.TP
+\fBconfig\fR <config_param> <config_value>
+set parameter in xml configuration file
+This command requires xml config parameter and its value.
+.TP
+\fBconfig\-use\fR
+restarts ping daemons with new configuration
+This command does not take any parameters.
+.TP
+\fBconfig\-default\fR
+restore vca configuration to default values
+        This command does not take any parameters.
+.TP
+\fBtemp\fR
+read temp from cpu node
+.TP
+\fBICMP\-watchdog\fR <subcmd>
+start/stop ICMP watchdog. Subcommands:
+        1 : enable
+        0 : disable
+.TP
+\fBnetwork\fR <subcmd>
+get network information. Subcommands:
+        all : print all network information
+        dhcp\-renew : renew IP address assigned by DHCP
+        ip : print IP address
+        ip6 : print IPv6 address
+        mac : print MAC address
+        stats : print interface statistics
+        vm\-mac : print VM MAC address
+.TP
+\fBblockio\fR <subcmd>
+controls block devices. Subcommands:
+        list [vcablk<N>] : list block devices
+        open vcablk<N> [[RO|RW <file_path>]|[ramdisk <size_mb>]] : open block device
+        close vcablk<N> : close block device
+.TP
+\fBinfo\fR <subcmd>
+print VCA information. Subcommands:
+ hw : print device information
+ system : print system information
+ node\-os : print OS booted on cpu
+ BIOS : print BIOS verison information
+.TP
+\fBpwrbtn\-short\fR
+power button toggle
+.TP
+\fBpwrbtn\-long\fR
+power button override 5 sec
+.TP
+\fBos\-shutdown\fR
+shutdown OS
+.TP
+\fBhelp\fR
+print usage instruction
+.SH OPTIONS
+.TP
+\fB\-v\fR
+increase log verbosity
+.TP
+\fB\-vv\fR
+increase log verbosity even more
+.TP
+\fB\-\-skip\-modprobe\-check\fR
+turn off checking whether vca device is ready
+.TP
+\fB\-\-force\fR
+force command execution (WARNING: you do it at your own risk!)
+.SH EXAMPLES
+ vcactl reset
+ vcactl reset 0 2
+ vcactl config auto\-boot 0
+ vcactl boot 1 2 /home/centOS7.img
+ vcactl boot 0 1 vcablk0
+ vcactl boot 1 1 \-\-force\-last\-os\-image
+ vcactl reboot
+ vcactl ICMP\-watchdog 1 0 2 127.0.0.1
+ vcactl network ip 0 0
+ vcactl update\-EEPROM /home/Fab2_8713_8733_v23_crc_B7D58879.bin
+ vcactl update\-BIOS 0 0 /home/MonteVistaBios.img
+ vcactl update\-MAC 0 1 00:01:02:03:04:05
+ vcactl blockio list
+ vcactl blockio open 0 1 vcablk3 ramdisk 20
+ vcactl blockio open 0 1 vcablk3 RO ~/disk.img
+ vcactl blockio list 0 1 vcablk3
+ vcactl blockio close 0 1  vcablk3
+ vcactl blockio open vcablk0
+ vcactl status
+

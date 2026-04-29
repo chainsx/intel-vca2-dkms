@@ -1,0 +1,15 @@
+#!/bin/bash
+mkdir /var/lock/vca 2>/dev/null
+chmod 775 /var/lock/vca
+mkdir /var/log/vca 2>/dev/null
+chmod 775 /var/log/vca
+ln -sfn /usr/sbin/vcactl /usr/sbin/vcactrl
+chgrp vcausers /etc/vca_config.d/
+chmod 775 /etc/vca_config.d/
+
+if [ -f /etc/vca_config.d/vca_config.old_user.xml ]; then
+	cp /etc/vca_config.d/vca_config.xml /etc/vca_config.d/vca_config.new_default.xml
+	echo "Running configuration update. This may take a while."
+	vca_config_upgrade.sh
+fi
+systemctl enable vcactl && systemctl start vcactl

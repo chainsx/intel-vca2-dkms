@@ -1,0 +1,21 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Intel Visual Compute Accelerator host stack
+Source: Intel VCA 2.3.26 source archives and local Ubuntu 22.04 compatibility changes
+
+Files: *
+Copyright: 2015-2018 Intel Corporation
+License: GPL-2
+ This package is based on Intel VCA 2.3.26 modules and applications.
+ The upstream source trees include COPYING files containing the GNU General
+ Public License, version 2, and source headers state that the program may be
+ redistributed and/or modified under the terms of the GNU General Public
+ License, version 2, as published by the Free Software Foundation.
+ .
+ On Debian systems, the complete text of GPL-2 can be found in
+ /usr/share/common-licenses/GPL-2.
+
+Files: debian/*
+Copyright: 2026 Local VCA Maintainer
+License: GPL-2
+ The Debian packaging is distributed under the same license as the upstream
+ source.

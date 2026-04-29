@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+if ! getent group vcausers >/dev/null; then
+	groupadd vcausers
+fi
+
+if ! getent passwd vcausers_default >/dev/null; then
+	GUID=$(getent group vcausers | cut -d: -f3)
+	adduser --system --gid "${GUID}" vcausers_default
+fi

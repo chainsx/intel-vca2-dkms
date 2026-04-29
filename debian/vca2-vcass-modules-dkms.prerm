@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+NAME="vca2-vcass"
+VERSION="2.3.26+ubuntu22.04.6"
+case "$1" in
+  remove|deconfigure)
+    if command -v dkms >/dev/null 2>&1; then
+      dkms remove -m "$NAME" -v "$VERSION" --all || true
+    fi
+    ;;
+esac
+exit 0

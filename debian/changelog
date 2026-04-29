@@ -1,0 +1,11 @@
+intel-vca2-host (2.3.26+ubuntu22.04.6) jammy; urgency=medium
+
+  * Repackage Intel VCA 2.3.26 host stack for Ubuntu 22.04.
+  * Keep v11 kernel modules with BlockIO enabled by default.
+  * Keep DKMS vop.ko installation and plx87xx softdep ordering fix.
+  * Disable the legacy hard NetworkManager boot guard in vcactl boot.
+    NetworkManager now produces a warning only and no longer requires
+    systemctl stop NetworkManager or --force for this check.
+  * Keep host-side vca_csa blacklist; host uses vca_csm for /sys/class/vca.
+
+ -- Local VCA Maintainer <root@localhost>  Tue, 28 Apr 2026 21:20:00 +0800

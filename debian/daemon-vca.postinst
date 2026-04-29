@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+case "$1" in
+  configure)
+    if ! getent group vcausers >/dev/null; then
+      addgroup --system vcausers
+    fi
+    if ! getent passwd vcausers_default >/dev/null; then
+      adduser --system --no-create-home --disabled-login --disabled-password --ingroup vcausers vcausers_default
+    fi
+    install -d -o root -g vcausers -m 0775 /var/log/vca /var/lock/vca /run/lock/vca /etc/vca_config.d
+    chgrp -R vcausers /etc/vca_config.d || true
+    chmod 0775 /etc/vca_config.d || true
+    ln -sfn /usr/sbin/vcactl /usr/sbin/vcactrl
+    if command -v systemd-tmpfiles >/dev/null 2>&1; then
+      systemd-tmpfiles --create vca.conf || true
+    fi
+    if command -v udevadm >/dev/null 2>&1; then
+      udevadm control --reload-rules || true
+      udevadm trigger --subsystem-match=net || true
+    fi
+    if command -v systemctl >/dev/null 2>&1; then
+      systemctl daemon-reload || true
+      systemctl enable vcactl.service || true
+    fi
+    ;;
+esac
+exit 0

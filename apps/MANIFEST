@@ -1,0 +1,6 @@
+vca_config.d/vca_config.xml
+rules/97-host_eth_up.rules
+scripts/vca_eth_ifup.sh
+scripts/vca_config_upgrade.sh
+scripts/make_config.py
+tmpfiles.d/vca.conf

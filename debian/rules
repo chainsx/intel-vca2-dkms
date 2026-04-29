@@ -1,0 +1,92 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE ?= 1
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+UPSTREAM_VERSION := $(shell dpkg-parsechangelog -SVersion | sed 's/-.*//')
+DKMS_NAME := vca2-vcass
+DKMS_VERSION := $(UPSTREAM_VERSION)
+APP_BUILD_DIR := build-apps
+MODULES_SRC := $(CURDIR)/modules
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	mkdir -p $(APP_BUILD_DIR)
+	cd $(APP_BUILD_DIR) && cmake ../apps \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DOS=UBUNTU \
+		-DPKG_VER=$(UPSTREAM_VERSION) \
+		-DMODULES_SRC=$(MODULES_SRC) \
+		-DVCASS_ENABLE_WERROR=OFF
+
+override_dh_auto_build:
+	$(MAKE) -C $(APP_BUILD_DIR)
+
+override_dh_auto_install:
+	# DKMS source package
+	install -d debian/vca2-vcass-modules-dkms/usr/src/$(DKMS_NAME)-$(DKMS_VERSION)
+	rsync -a --delete \
+		--exclude='*.o' --exclude='*.ko' --exclude='*.ko.unsigned' \
+		--exclude='*.mod' --exclude='*.mod.c' --exclude='.tmp_versions' \
+		--exclude='modules.order' --exclude='Module.symvers' \
+		modules/ debian/vca2-vcass-modules-dkms/usr/src/$(DKMS_NAME)-$(DKMS_VERSION)/
+	install -m 0644 debian/vca2-vcass.dkms.conf debian/vca2-vcass-modules-dkms/usr/src/$(DKMS_NAME)-$(DKMS_VERSION)/dkms.conf
+	install -d debian/vca2-vcass-modules-dkms/etc/modprobe.d
+	install -m 0644 debian/vca2-host-modprobe.conf debian/vca2-vcass-modules-dkms/etc/modprobe.d/vca2-host.conf
+	install -d debian/vca2-vcass-modules-dkms/usr/sbin
+	install -m 0755 debian/vca2-load-modules debian/vca2-vcass-modules-dkms/usr/sbin/vca2-load-modules
+	install -d debian/vca2-vcass-modules-dkms/usr/share/doc/vca2-vcass-modules-dkms
+	install -m 0644 modules/COPYING debian/vca2-vcass-modules-dkms/usr/share/doc/vca2-vcass-modules-dkms/COPYING
+
+	# Userspace package layout, modeled after Intel daemon-vca deb but updated for Ubuntu 22.04.
+	install -d debian/daemon-vca/usr/sbin
+	install -m 0755 $(APP_BUILD_DIR)/bin/vcactl debian/daemon-vca/usr/sbin/vcactl
+	install -m 0755 $(APP_BUILD_DIR)/bin/vcactld debian/daemon-vca/usr/sbin/vcactld
+	install -m 0755 apps/scripts/vca_config_upgrade.sh debian/daemon-vca/usr/sbin/vca_config_upgrade.sh
+	install -m 0755 apps/scripts/vca_eth_ifup.sh debian/daemon-vca/usr/sbin/vca_eth_ifup.sh
+	install -m 0755 apps/tools/vca_image_resize.sh debian/daemon-vca/usr/sbin/vca_image_resize.sh
+	install -m 0755 apps/kvm_scripts/vca_kvmgtctl.sh debian/daemon-vca/usr/sbin/vca_kvmgtctl.sh
+	install -m 0755 apps/kvm_scripts/vca_start_card_kvm.sh debian/daemon-vca/usr/sbin/vca_start_card_kvm.sh
+	install -m 0755 apps/xen_scripts/vca_start_card_domu.sh debian/daemon-vca/usr/sbin/vca_start_card_domu.sh
+	install -m 0755 apps/tools/vcainfo debian/daemon-vca/usr/sbin/vcainfo
+
+	install -d debian/daemon-vca/usr/lib/vca
+	install -m 0755 apps/scripts/make_config.py debian/daemon-vca/usr/lib/vca/make_config.py
+	install -m 0755 apps/kvm_scripts/kvmsetup.sh debian/daemon-vca/usr/lib/vca/kvmsetup.sh
+	install -m 0755 apps/kvm_scripts/kvmgtctl_node.sh debian/daemon-vca/usr/lib/vca/kvmgtctl_node.sh
+	install -m 0755 apps/xen_scripts/domUsetup.sh debian/daemon-vca/usr/lib/vca/domUsetup.sh
+	install -m 0755 apps/tools/vcanodeinfo.sh debian/daemon-vca/usr/lib/vca/vcanodeinfo.sh
+	install -m 0644 apps/xen_scripts/card_vm.hvm debian/daemon-vca/usr/lib/vca/card_vm.hvm
+	install -m 0644 apps/xen_scripts/card_gfx_vm.hvm debian/daemon-vca/usr/lib/vca/card_gfx_vm.hvm
+	install -m 0644 apps/xen_scripts/windows_card_gfx_vm.hvm debian/daemon-vca/usr/lib/vca/windows_card_gfx_vm.hvm
+
+	install -d debian/daemon-vca/etc/profile.d
+	install -m 0644 apps/etc_profile_scripts/vcausers_setup_path.sh debian/daemon-vca/etc/profile.d/vcausers_setup_path.sh
+	install -d debian/daemon-vca/etc/vca_config.d
+	install -m 0664 apps/vca_config.d/vca_config.xml debian/daemon-vca/etc/vca_config.d/vca_config.xml
+	install -m 0664 apps/vca_config.d/vca_xen_multicast_config.xml debian/daemon-vca/etc/vca_config.d/vca_xen_multicast_config.xml
+	install -m 0750 apps/vca_config.d/vca_auto_boot.sh debian/daemon-vca/etc/vca_config.d/vca_auto_boot.sh
+	install -m 0750 apps/vca_config.d/vca_daemon_default.sh debian/daemon-vca/etc/vca_config.d/vca_daemon_default.sh
+	install -m 0664 apps/vca_config.d/MACUpdateImage.img debian/daemon-vca/etc/vca_config.d/MACUpdateImage.img
+	install -m 0664 apps/vca_config.d/ClearSMBiosEventLogImage.img debian/daemon-vca/etc/vca_config.d/ClearSMBiosEventLogImage.img
+
+	install -d debian/daemon-vca/lib/systemd/system
+	install -m 0644 apps/services/vcactl.service debian/daemon-vca/lib/systemd/system/vcactl.service
+	install -d debian/daemon-vca/lib/udev/rules.d
+	install -m 0644 apps/rules/*.rules debian/daemon-vca/lib/udev/rules.d/
+	install -d debian/daemon-vca/usr/lib/tmpfiles.d
+	install -m 0644 apps/tmpfiles.d/vca.conf debian/daemon-vca/usr/lib/tmpfiles.d/vca.conf
+	install -d debian/daemon-vca/usr/share/bash-completion/completions
+	install -m 0644 apps/bash_completion/vcactl debian/daemon-vca/usr/share/bash-completion/completions/vcactl
+	install -d debian/daemon-vca/usr/share/man/man1
+	install -m 0644 apps/vcactl.1 debian/daemon-vca/usr/share/man/man1/vcactl.1
+	install -d debian/daemon-vca/usr/share/doc/daemon-vca
+	install -m 0644 apps/COPYING debian/daemon-vca/usr/share/doc/daemon-vca/COPYING
+
+	# Metapackage has no installed payload.
+
+override_dh_auto_clean:
+	rm -rf $(APP_BUILD_DIR)

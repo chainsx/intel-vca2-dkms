@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+# Host-side loader.  Use modprobe so DKMS-installed paths and softdeps are honored.
+# Do not load vca_csa on the host.
+for m in \
+  vop_bus vop vca_csm_bus vca_mgr_bus vca_mgr_extd_bus vca_csa_bus \
+  vca_virtio vca_virtio_ring vca_vringh vca_virtio_net \
+  vcablkfe vcablk_bckend \
+  vca_csm vca_mgr vca_mgr_extd \
+  plx87xx_dma plx87xx; do
+  modprobe "$m" || exit $?
+done
