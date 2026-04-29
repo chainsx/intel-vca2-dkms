@@ -1,6 +1,6 @@
 # Intel VCA2 DKMS host stack
 
-This Debian source tree repackages Intel VCA 2.3.26 host software for Ubuntu 22.04 with local compatibility fixes.
+This Debian source tree repackages Intel VCA 2.3.26 host software for Ubuntu 22.04(HWE kenel, Linux 6.8.0) with local compatibility fixes.
 
 It builds three binary packages:
 
