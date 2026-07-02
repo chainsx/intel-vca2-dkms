@@ -30,7 +30,7 @@ static inline struct plx_device *vpdev_to_xdev(struct vop_device *vpdev)
 
 /*
  * DMA mappings requested on the synthetic VOP device are backed by the
- * real PLX PCI device. Ubuntu 22.04 HWE 6.8 exposes dma_map_ops through
+ * real PLX PCI device. Ubuntu 24.04 kernels expose dma_map_ops through
  * <linux/dma-map-ops.h>; use the current map_page/unmap_page prototypes
  * and delegate the actual mapping to the parent PCI device.
  */

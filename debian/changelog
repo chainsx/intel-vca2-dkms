@@ -1,3 +1,20 @@
+intel-vca2-host (2.3.26+ubuntu24.04.8) noble; urgency=medium
+
+  * Fix Linux >= 6.14 device_find_child() callback constification.
+  * Stop setting BLK_MQ_F_SHOULD_MERGE on Linux >= 6.14, where it was
+    removed because request merging is enabled by default.
+  * Retain the Linux 6.8 through 6.13 callback and block-layer paths.
+
+ -- Local VCA Maintainer <root@localhost>  Thu, 02 Jul 2026 10:30:00 +0800
+
+intel-vca2-host (2.3.26+ubuntu24.04.7) noble; urgency=medium
+
+  * Add Ubuntu 24.04 HWE Linux 6.17 DKMS support.
+  * Use the const-correct bus_type.match callback signature on Linux >= 6.11.
+  * Retain the Linux 6.8 callback ABI for the Ubuntu 24.04 GA kernel.
+
+ -- Local VCA Maintainer <root@localhost>  Thu, 02 Jul 2026 10:00:00 +0800
+
 intel-vca2-host (2.3.26+ubuntu22.04.6) jammy; urgency=medium
 
   * Repackage Intel VCA 2.3.26 host stack for Ubuntu 22.04.

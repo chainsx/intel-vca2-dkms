@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Intel Visual Compute Accelerator host stack
-Source: Intel VCA 2.3.26 source archives and local Ubuntu 22.04 compatibility changes
+Source: Intel VCA 2.3.26 source archives and local Ubuntu 24.04 compatibility changes
 
 Files: *
 Copyright: 2015-2018 Intel Corporation

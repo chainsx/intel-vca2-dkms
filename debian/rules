@@ -30,8 +30,8 @@ override_dh_auto_install:
 	install -d debian/vca2-vcass-modules-dkms/usr/src/$(DKMS_NAME)-$(DKMS_VERSION)
 	rsync -a --delete \
 		--exclude='*.o' --exclude='*.ko' --exclude='*.ko.unsigned' \
-		--exclude='*.mod' --exclude='*.mod.c' --exclude='.tmp_versions' \
-		--exclude='modules.order' --exclude='Module.symvers' \
+		--exclude='*.mod' --exclude='*.mod.c' --exclude='.*.cmd' --exclude='.*.d' \
+		--exclude='.tmp_versions' --exclude='modules.order' --exclude='Module.symvers' \
 		modules/ debian/vca2-vcass-modules-dkms/usr/src/$(DKMS_NAME)-$(DKMS_VERSION)/
 	install -m 0644 debian/vca2-vcass.dkms.conf debian/vca2-vcass-modules-dkms/usr/src/$(DKMS_NAME)-$(DKMS_VERSION)/dkms.conf
 	install -d debian/vca2-vcass-modules-dkms/etc/modprobe.d
@@ -41,7 +41,7 @@ override_dh_auto_install:
 	install -d debian/vca2-vcass-modules-dkms/usr/share/doc/vca2-vcass-modules-dkms
 	install -m 0644 modules/COPYING debian/vca2-vcass-modules-dkms/usr/share/doc/vca2-vcass-modules-dkms/COPYING
 
-	# Userspace package layout, modeled after Intel daemon-vca deb but updated for Ubuntu 22.04.
+	# Userspace package layout, modeled after Intel daemon-vca deb but updated for Ubuntu 24.04.
 	install -d debian/daemon-vca/usr/sbin
 	install -m 0755 $(APP_BUILD_DIR)/bin/vcactl debian/daemon-vca/usr/sbin/vcactl
 	install -m 0755 $(APP_BUILD_DIR)/bin/vcactld debian/daemon-vca/usr/sbin/vcactld

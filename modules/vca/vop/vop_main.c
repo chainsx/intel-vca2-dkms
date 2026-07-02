@@ -770,7 +770,11 @@ kfree:
 /*
  * match for a vop device with a specific desc pointer
  */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
+static int vop_match_desc(struct device *dev, const void *data)
+#else
 static int vop_match_desc(struct device *dev, void *data)
+#endif
 {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 7, 0) && !defined(dev_to_virtio)
 #define dev_to_virtio(dev) container_of(dev, struct virtio_device, dev)
@@ -778,7 +782,7 @@ static int vop_match_desc(struct device *dev, void *data)
 	struct virtio_device *_dev = dev_to_virtio(dev);
 	struct _vop_vdev *vdev = to_vopvdev(_dev);
 
-	return vdev->desc == (void __iomem *)data;
+	return vdev->desc == (const void __iomem *)data;
 }
 
 /*
@@ -865,8 +869,13 @@ static void _vop_scan_devices(void __iomem *dp, struct vop_device *vpdev,
 			continue;
 
 		/* device already exists */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
+		dev = device_find_child(&vpdev->dev, (const void __force *)d,
+					vop_match_desc);
+#else
 		dev = device_find_child(&vpdev->dev, (void __force *)d,
 					vop_match_desc);
+#endif
 		if (dev) {
 			if (remove)
 				iowrite8(VCA_VIRTIO_PARAM_DEV_REMOVE,

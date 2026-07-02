@@ -105,13 +105,21 @@ static inline int virtio_id_match(const struct virtio_device *dev,
 
 /* This looks through all the IDs a driver claims to support.  If any of them
  * match, we return 1 and the kernel will call virtio_dev_probe(). */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+static int virtio_dev_match(struct device *_dv, const struct device_driver *_dr)
+#else
 static int virtio_dev_match(struct device *_dv, struct device_driver *_dr)
+#endif
 {
 	unsigned int i;
 	struct virtio_device *dev = dev_to_virtio((struct device *)_dv);
 	const struct virtio_device_id *ids;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+	ids = container_of(_dr, const struct virtio_driver, driver)->id_table;
+#else
 	ids = drv_to_virtio(_dr)->id_table;
+#endif
 	for (i = 0; ids[i].device; i++)
 		if (virtio_id_match(dev, &ids[i]))
 			return 1;

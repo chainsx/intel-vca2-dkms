@@ -953,7 +953,14 @@ vcablk_disk_create(struct vcablk_dev* fdev, int uniq_id, size_t size, bool read_
 	dev->tag_set.nr_hw_queues = 1;
 	dev->tag_set.queue_depth = REQ_RING_SIZE - 1;
 	dev->tag_set.numa_node = NUMA_NO_NODE;
+/*
+ * BLK_MQ_F_SHOULD_MERGE was removed in Linux 6.14 because request
+ * merging is now enabled by default.  Keep setting it on older kernels,
+ * where the flag is still required to preserve the original behavior.
+ */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 14, 0)
 	dev->tag_set.flags = BLK_MQ_F_SHOULD_MERGE;
+#endif
 	dev->tag_set.driver_data = dev;
 
 	err = blk_mq_alloc_tag_set(&dev->tag_set);

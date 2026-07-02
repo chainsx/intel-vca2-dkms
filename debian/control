@@ -42,7 +42,7 @@ Replaces:
 Description: Intel VCA2 host kernel modules as DKMS source
  This package installs the Intel Visual Compute Accelerator 2 host kernel
  module sources into /usr/src and registers them with DKMS.  It is based on
- Intel VCA 2.3.26 vcass modules with Ubuntu 22.04 / Linux 6.8 compatibility
+ Intel VCA 2.3.26 vcass modules with Ubuntu 24.04 Linux 6.8 and Linux 6.17 compatibility
  fixes, including the BlockIO port.
  .
  The host-side package intentionally blacklists vca_csa because vca_csm owns
@@ -75,14 +75,14 @@ Depends:
 Provides:
  daemon-vca
 Conflicts:
- daemon-vca (<< 2.3.26+ubuntu22.04.6)
+ daemon-vca (<< 2.3.26+ubuntu24.04.8)
 Replaces:
- daemon-vca (<< 2.3.26+ubuntu22.04.6)
+ daemon-vca (<< 2.3.26+ubuntu24.04.8)
 Description: Intel VCA host userspace management tools
  This package provides vcactl, vcactld, udev rules, systemd service files,
  configuration files, and host-side scripts for Intel Visual Compute
  Accelerator cards.  It is based on Intel VCA 2.3.26 userspace with Python 3
- and Ubuntu 22.04 dependency updates.
+ and Ubuntu 24.04 dependency updates.
 
 Package: vca2-host
 Architecture: all

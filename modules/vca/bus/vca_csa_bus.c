@@ -87,13 +87,21 @@ static inline int vca_csa_id_match(const struct vca_csa_device *dev,
  * This looks through all the IDs a driver claims to support.  If any of them
  * match, we return 1 and the kernel will call vca_csa_dev_probe().
  */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+static int vca_csa_dev_match(struct device *dv, const struct device_driver *dr)
+#else
 static int vca_csa_dev_match(struct device *dv, struct device_driver *dr)
+#endif
 {
 	unsigned int i;
 	struct vca_csa_device *dev = dev_to_vca_csa((struct device *)dv);
 	const struct vca_csa_device_id *ids;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+	ids = container_of(dr, const struct vca_csa_driver, driver)->id_table;
+#else
 	ids = drv_to_vca_csa(dr)->id_table;
+#endif
 	for (i = 0; ids[i].device; i++)
 		if (vca_csa_id_match(dev, &ids[i]))
 			return 1;
