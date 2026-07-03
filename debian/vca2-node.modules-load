@@ -1,0 +1,16 @@
+# Core VCA2 node modules.
+vop_bus
+vca_csm_bus
+vca_mgr_bus
+vca_mgr_extd_bus
+vca_csa_bus
+vca_virtio
+vca_virtio_ring
+vca_vringh
+vca_virtio_net
+vca_csa
+vop
+vcablkfe
+vcablk_bckend
+plx87xx_dma
+plx87xx

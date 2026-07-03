@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-NAME="vca2-vcass"
+NAME="vca2-vcass-node"
 VERSION="2.3.26+ubuntu24.04.9"
 case "$1" in
   configure)
@@ -12,6 +12,11 @@ case "$1" in
       dkms install -m "$NAME" -v "$VERSION" --force
     fi
     depmod -a || true
+    if command -v update-initramfs >/dev/null 2>&1; then
+      update-initramfs -u -k all || true
+    fi
+    systemctl daemon-reload >/dev/null 2>&1 || true
+    systemctl enable vca_agent.service >/dev/null 2>&1 || true
     ;;
 esac
 exit 0

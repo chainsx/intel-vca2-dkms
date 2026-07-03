@@ -7,11 +7,15 @@ not-n := y
 m-not-y := n
 m-not-n := m
 
-ifeq ($(CONFIG_X86_VCAPCI),)
-CONFIG_X86_VCAPCI := n
-endif
-ifeq ($(CONFIG_X86_VCAPCI)$(VCA_CARD_ARCH),n)
-$(error building for host, but $$(VCA_CARD_ARCH) is unset)
+# The original Intel build selected the card-side build only when the
+# proprietary CONFIG_X86_VCAPCI kernel option was set.  Distribution kernels
+# do not carry that option, so package role must be explicit.
+#
+#   VCA_BUILD_ROLE=host  - modules loaded on the PCIe host
+#   VCA_BUILD_ROLE=node  - modules loaded inside a VCA node OS
+VCA_BUILD_ROLE ?= host
+ifneq ($(VCA_BUILD_ROLE),$(firstword $(filter host node,$(VCA_BUILD_ROLE))))
+$(error $$(VCA_BUILD_ROLE) must be host or node)
 endif
 ifneq ($(VCA_CARD_ARCH),$(firstword $(filter l1om k1om,$(VCA_CARD_ARCH))))
 $(error $$(VCA_CARD_ARCH) must be l1om or k1om)
@@ -53,11 +57,14 @@ ifeq ($(VCA_CARD_ARCH),k1om)
 subdir-ccflags-y += -DVCA_IS_K1OM -DCONFIG_MK1OM
 endif
 
-# a shorthand for "runs on the card"?
-subdir-ccflags-$(CONFIG_X86_VCAPCI) += -D_VCA_SCIF_
-
-# "runs on the host"
-subdir-ccflags-$(not-$(CONFIG_X86_VCAPCI)) += -DHOST -DUSE_VCONSOLE
+# Compile-time personality.  Node code uses _VCA_SCIF_; host code uses
+# HOST/USE_VCONSOLE.  This must not be inferred from CONFIG_X86_VCAPCI because
+# Ubuntu kernels do not define that Intel-private configuration option.
+ifeq ($(VCA_BUILD_ROLE),node)
+subdir-ccflags-y += -D_VCA_SCIF_
+else
+subdir-ccflags-y += -DHOST -DUSE_VCONSOLE
+endif
 
 # always set? what's this thing's purpose?
 subdir-ccflags-y += -D__LINUX_GPL__ -D_MODULE_SCIF_
@@ -74,28 +81,33 @@ subdir-ccflags-y += -DVCA_BUILD_BLOCKIO=$(VCA_BUILD_BLOCKIO)
 subdir-ccflags-y += -fstack-protector -O2 -D_FORTIFY_SOURCE=2 -Wformat
 ldflags-y += -z noexecstack -z relro -z now
 
-obj-$(CONFIG_X86_VCAPCI) += vca/bus/
-obj-$(CONFIG_X86_VCAPCI) += vca/vop/
+# Build only the modules that have a useful role on each side of the
+# VCA link.  The node must include CSA and the VCA virtio stack: VOP creates
+# child devices whose drivers are supplied by those modules.
+ifeq ($(VCA_BUILD_ROLE),node)
+obj-m += vca/bus/
+obj-m += vca/vca_csa/
+obj-m += vca/vca_virtio/
+obj-m += vca/vop/
 ifeq ($(VCA_BUILD_BLOCKIO),1)
-obj-$(CONFIG_X86_VCAPCI) += vca/blockio/
+obj-m += vca/blockio/
 endif
-obj-$(CONFIG_X86_VCAPCI) += plx87xx.o
-obj-$(CONFIG_X86_VCAPCI) += plx87xx_dma.o
-
-#obj-$(m-not-$(CONFIG_X86_VCAPCI)) += vca.o
-
-obj-$(m-not-$(CONFIG_X86_VCAPCI)) += vca/bus/
-obj-$(m-not-$(CONFIG_X86_VCAPCI)) += vca/vca_csm/
-obj-$(m-not-$(CONFIG_X86_VCAPCI)) += vca/vca_mgr/
-obj-$(m-not-$(CONFIG_X86_VCAPCI)) += vca/vca_mgr_extd/
-obj-$(m-not-$(CONFIG_X86_VCAPCI)) += vca/vca_csa/
-obj-$(m-not-$(CONFIG_X86_VCAPCI)) += vca/vca_virtio/
-obj-$(m-not-$(CONFIG_X86_VCAPCI)) += vca/vop/
+obj-m += plx87xx.o
+obj-m += vca/plx87xx_dma/
+else
+obj-m += vca/bus/
+obj-m += vca/vca_csm/
+obj-m += vca/vca_mgr/
+obj-m += vca/vca_mgr_extd/
+obj-m += vca/vca_csa/
+obj-m += vca/vca_virtio/
+obj-m += vca/vop/
 ifeq ($(VCA_BUILD_BLOCKIO),1)
-obj-$(m-not-$(CONFIG_X86_VCAPCI)) += vca/blockio/
+obj-m += vca/blockio/
 endif
-obj-$(m-not-$(CONFIG_X86_VCAPCI)) += plx87xx.o
-obj-$(m-not-$(CONFIG_X86_VCAPCI)) += vca/plx87xx_dma/
+obj-m += plx87xx.o
+obj-m += vca/plx87xx_dma/
+endif
 
 plx87xx-objs :=
 plx87xx-objs += vca/plx87xx/plx_main.o

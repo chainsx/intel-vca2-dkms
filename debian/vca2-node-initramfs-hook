@@ -1,0 +1,25 @@
+#!/bin/sh
+set -eu
+
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case "${1:-}" in
+  prereqs) prereqs; exit 0 ;;
+esac
+
+. /usr/share/initramfs-tools/hook-functions
+
+# Include the VCA node transport and BlockIO path in every generated initramfs.
+# manual_add_modules resolves the DKMS installation path from modules.dep.
+for mod in \
+  vop_bus vca_csm_bus vca_mgr_bus vca_mgr_extd_bus vca_csa_bus \
+  vca_virtio vca_virtio_ring vca_vringh vca_virtio_net \
+  vca_csa vop vcablkfe vcablk_bckend plx87xx_dma plx87xx; do
+    manual_add_modules "$mod" || true
+done
+
+mkdir -p "${DESTDIR}/etc/modprobe.d" "${DESTDIR}/etc/modules-load.d"
+[ -f /etc/modprobe.d/vca2-node.conf ] && \
+  cp -a /etc/modprobe.d/vca2-node.conf "${DESTDIR}/etc/modprobe.d/"
+[ -f /etc/modules-load.d/vca2-node.conf ] && \
+  cp -a /etc/modules-load.d/vca2-node.conf "${DESTDIR}/etc/modules-load.d/"

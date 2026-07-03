@@ -5,6 +5,7 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 UPSTREAM_VERSION := $(shell dpkg-parsechangelog -SVersion | sed 's/-.*//')
 DKMS_NAME := vca2-vcass
+DKMS_NODE_NAME := vca2-vcass-node
 DKMS_VERSION := $(UPSTREAM_VERSION)
 APP_BUILD_DIR := build-apps
 MODULES_SRC := $(CURDIR)/modules
@@ -40,6 +41,28 @@ override_dh_auto_install:
 	install -m 0755 debian/vca2-load-modules debian/vca2-vcass-modules-dkms/usr/sbin/vca2-load-modules
 	install -d debian/vca2-vcass-modules-dkms/usr/share/doc/vca2-vcass-modules-dkms
 	install -m 0644 modules/COPYING debian/vca2-vcass-modules-dkms/usr/share/doc/vca2-vcass-modules-dkms/COPYING
+
+	# Node-side DKMS and early-boot integration.  Do not install host tools here.
+	install -d debian/vca2-vcass-node-modules-dkms/usr/src/$(DKMS_NODE_NAME)-$(DKMS_VERSION)
+	rsync -a --delete \
+		--exclude='*.o' --exclude='*.ko' --exclude='*.ko.unsigned' \
+		--exclude='*.mod' --exclude='*.mod.c' --exclude='.*.cmd' --exclude='.*.d' \
+		--exclude='.tmp_versions' --exclude='modules.order' --exclude='Module.symvers' \
+		modules/ debian/vca2-vcass-node-modules-dkms/usr/src/$(DKMS_NODE_NAME)-$(DKMS_VERSION)/
+	install -m 0644 debian/vca2-vcass-node.dkms.conf debian/vca2-vcass-node-modules-dkms/usr/src/$(DKMS_NODE_NAME)-$(DKMS_VERSION)/dkms.conf
+	install -d debian/vca2-vcass-node-modules-dkms/etc/modprobe.d
+	install -m 0644 debian/vca2-node-modprobe.conf debian/vca2-vcass-node-modules-dkms/etc/modprobe.d/vca2-node.conf
+	install -d debian/vca2-vcass-node-modules-dkms/etc/modules-load.d
+	install -m 0644 debian/vca2-node.modules-load debian/vca2-vcass-node-modules-dkms/etc/modules-load.d/vca2-node.conf
+	install -d debian/vca2-vcass-node-modules-dkms/usr/sbin
+	install -m 0755 modules/scripts/vca_agent.sh debian/vca2-vcass-node-modules-dkms/usr/sbin/vca_agent.sh
+	install -m 0755 modules/scripts/vca_elog.py debian/vca2-vcass-node-modules-dkms/usr/sbin/vca_elog.py
+	install -d debian/vca2-vcass-node-modules-dkms/lib/systemd/system
+	install -m 0644 modules/scripts/vca_agent.service debian/vca2-vcass-node-modules-dkms/lib/systemd/system/vca_agent.service
+	install -d debian/vca2-vcass-node-modules-dkms/usr/share/initramfs-tools/hooks
+	install -m 0755 debian/vca2-node-initramfs-hook debian/vca2-vcass-node-modules-dkms/usr/share/initramfs-tools/hooks/vca2-vcass-node
+	install -d debian/vca2-vcass-node-modules-dkms/usr/share/doc/vca2-vcass-node-modules-dkms
+	install -m 0644 modules/COPYING debian/vca2-vcass-node-modules-dkms/usr/share/doc/vca2-vcass-node-modules-dkms/COPYING
 
 	# Userspace package layout, modeled after Intel daemon-vca deb but updated for Ubuntu 24.04.
 	install -d debian/daemon-vca/usr/sbin

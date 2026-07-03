@@ -1,3 +1,12 @@
+intel-vca2-host (2.3.26+ubuntu24.04.9) noble; urgency=medium
+
+  * Add vca2-vcass-node-modules-dkms, a separate card-side DKMS package.
+  * Select host or node module topology with VCA_BUILD_ROLE instead of the
+    Intel-private CONFIG_X86_VCAPCI kernel option.
+  * Install the node VCA agent, module load order, and initramfs hook.
+
+ -- Local VCA Maintainer <root@localhost>  Fri, 03 Jul 2026 10:00:00 +0800
+
 intel-vca2-host (2.3.26+ubuntu24.04.8) noble; urgency=medium
 
   * Fix Linux >= 6.14 device_find_child() callback constification.

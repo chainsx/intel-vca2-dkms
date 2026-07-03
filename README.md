@@ -105,3 +105,29 @@ Card: 0 Cpu: 2 STATE: bios_up
 ## License
 
 The Intel VCA module and application source trees contain `COPYING` with GNU GPL version 2. Source headers also state GNU GPL version 2. The Debian packaging is distributed under the same license. In Debian copyright notation this package is treated as `GPL-2` / GPL version 2.
+
+## Card-side (node) DKMS package
+
+`vca2-vcass-node-modules-dkms` is a separate package for a Linux operating
+system running *inside* a VCA2 node.  It must not be installed on the PCIe
+host.  The package builds with `VCA_BUILD_ROLE=node` and installs the
+card-side PLX/VOP/CSA/virtio/BlockIO module topology, `vca_agent.sh`, a
+module-load policy, and an initramfs hook.
+
+The node package does not make a generic Ubuntu installation bootable by
+itself.  Install it in the node root filesystem, build the modules for the
+node kernel, run `depmod` and `update-initramfs`, then put that rootfs and its
+matching EFI/GRUB/kernel into a VCA node image.  For the first BlockIO boot,
+the generated initramfs must contain `vcablkfe`, `vop`, `vca_csa`, the VCA
+virtio modules and their PLX dependencies.
+
+To build only the node-side modules outside DKMS:
+
+```bash
+make -C /lib/modules/"$(uname -r)"/build \
+  M="$PWD/modules" \
+  VCA_BUILD_ROLE=node \
+  VCA_CARD_ARCH=l1om \
+  KERNWARNFLAGS= \
+  modules
+```

@@ -30,9 +30,12 @@ kmodincludedir = $(realpath $(KERNEL_SRC))/include/modules
 systemd_dir = $(prefix)/lib/systemd
 services_dir = $(systemd_dir)/system
 
-# If building the host's driver for a VCA co-processor card, which card
-# $(ARCH) it should support
+# Target card architecture and driver personality.
+# VCA_BUILD_ROLE is host by default for backwards compatibility.  The node
+# package passes VCA_BUILD_ROLE=node explicitly.
 export VCA_CARD_ARCH
+VCA_BUILD_ROLE ?= host
+export VCA_BUILD_ROLE
 
 .PHONY: all install modules
 .PHONY: modules_install conf_install dev_install kdev_install
