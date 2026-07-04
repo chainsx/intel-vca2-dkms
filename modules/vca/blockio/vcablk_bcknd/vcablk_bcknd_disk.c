@@ -40,7 +40,7 @@
 #include "../vcablk/vcablk_pool.h"
 
 //#define BLOCKIO_FORCE_MEMCPY
-//#define BLOCKIO_FORCE_DMA_SYNC
+#define BLOCKIO_FORCE_DMA_SYNC
 
 #define VCABLK_MAX_TRANSFERS_PER_REQUEST	256
 #define VCABLK_MAX_SYNCS_PER_REQUEST		2
