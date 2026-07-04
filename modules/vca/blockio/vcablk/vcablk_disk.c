@@ -665,9 +665,9 @@ vcablk_disk_release(struct gendisk *disk)
 }
 
 static int
-vcablk_disk_getgeo(struct block_device *bdev, struct hd_geometry *geo)
+vcablk_disk_getgeo_common(struct gendisk *disk, struct hd_geometry *geo)
 {
-	struct vcablk_disk *dev = bdev->bd_disk->private_data;
+	struct vcablk_disk *dev = disk->private_data;
 	if (dev->gdisk) {
 		pr_debug("%s: %s size %lu\n",
 				__func__, dev->gdisk->disk_name, dev->size_bytes);
@@ -675,6 +675,20 @@ vcablk_disk_getgeo(struct block_device *bdev, struct hd_geometry *geo)
 	*geo = dev->geo;
 	return 0;
 }
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 18, 0)
+static int
+vcablk_disk_getgeo(struct gendisk *disk, struct hd_geometry *geo)
+{
+	return vcablk_disk_getgeo_common(disk, geo);
+}
+#else
+static int
+vcablk_disk_getgeo(struct block_device *bdev, struct hd_geometry *geo)
+{
+	return vcablk_disk_getgeo_common(bdev->bd_disk, geo);
+}
+#endif
 
 int
 vcablk_disk_stop(struct vcablk_disk *dev, bool force)
@@ -813,7 +827,7 @@ vcablk_disk_ioctl (struct block_device *bdev, blk_mode_t mode,
 	switch(cmd) {
 	case HDIO_GETGEO: {
 		struct hd_geometry geo;
-		vcablk_disk_getgeo(bdev, &geo);
+		vcablk_disk_getgeo_common(bdev->bd_disk, &geo);
 		if (copy_to_user(argp, &geo, sizeof(geo))) {
 			err = -EFAULT;
 		}

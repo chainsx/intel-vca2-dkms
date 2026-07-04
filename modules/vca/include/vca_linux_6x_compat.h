@@ -9,6 +9,7 @@
 #include <linux/compiler.h>
 #include <linux/dma-mapping.h>
 #include <linux/io.h>
+#include <linux/idr.h>
 #include <linux/printk.h>
 #include <linux/slab.h>
 #include <linux/string.h>
@@ -45,6 +46,35 @@
                 memset(__vca_dma_zalloc_ptr, 0, (size));                \
         __vca_dma_zalloc_ptr;                                           \
 })
+#endif
+
+
+/*
+ * VCA_LINUX_6_18_IDA_COMPAT
+ *
+ * Linux 6.18 no longer exports the legacy ida_simple_get()/
+ * ida_simple_remove() API used by the VCA 2.3.26 sources.  Keep the legacy
+ * call sites intact, but map them to the supported IDA allocator APIs.
+ */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 18, 0)
+static inline int vca_ida_simple_get(struct ida *ida, unsigned int start,
+				     unsigned int end, gfp_t gfp_mask)
+{
+	if (end)
+		return ida_alloc_range(ida, start, end - 1, gfp_mask);
+
+	return ida_alloc_min(ida, start, gfp_mask);
+}
+
+static inline void vca_ida_simple_remove(struct ida *ida, unsigned int id)
+{
+	ida_free(ida, id);
+}
+
+#define ida_simple_get(ida, start, end, gfp_mask) \
+	vca_ida_simple_get((ida), (start), (end), (gfp_mask))
+#define ida_simple_remove(ida, id) \
+	vca_ida_simple_remove((ida), (id))
 #endif
 
 #endif /* VCA_LINUX_6X_COMPAT_H */
