@@ -28,7 +28,7 @@ Install the matching kernel headers first, then the package:
 ```bash
 sudo apt install dkms build-essential initramfs-tools \
   "linux-headers-$(uname -r)"
-sudo apt install ./vca2-vcass-node-modules-dkms_2.3.26+ubuntu24.04.9_all.deb
+sudo apt install ./vca2-vcass-node-modules-dkms_2.3.26+ubuntu24.04.10_all.deb
 sudo dkms autoinstall -k "$(uname -r)"
 sudo depmod -a "$(uname -r)"
 sudo update-initramfs -u -k "$(uname -r)"

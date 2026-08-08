@@ -30,10 +30,37 @@ static inline struct plx_device *vpdev_to_xdev(struct vop_device *vpdev)
 
 /*
  * DMA mappings requested on the synthetic VOP device are backed by the
- * real PLX PCI device. Ubuntu 24.04 kernels expose dma_map_ops through
- * <linux/dma-map-ops.h>; use the current map_page/unmap_page prototypes
- * and delegate the actual mapping to the parent PCI device.
+ * real PLX PCI device. Linux 7.0 replaced the map_page/unmap_page DMA-op
+ * callbacks with map_phys/unmap_phys, while retaining the public DMA APIs.
+ * Select the matching callback ABI and always delegate the mapping to the
+ * parent PCI device.
  */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(7, 0, 0)
+static dma_addr_t
+_plx_dma_map_phys(struct device *dev, phys_addr_t phys, size_t size,
+		  enum dma_data_direction dir, unsigned long attrs)
+{
+	struct vop_device *vpdev = dev_get_drvdata(dev);
+	struct plx_device *xdev = vpdev_to_xdev(vpdev);
+
+	return dma_map_phys(&xdev->pdev->dev, phys, size, dir, attrs);
+}
+
+static void
+_plx_dma_unmap_phys(struct device *dev, dma_addr_t dma_addr, size_t size,
+		    enum dma_data_direction dir, unsigned long attrs)
+{
+	struct vop_device *vpdev = dev_get_drvdata(dev);
+	struct plx_device *xdev = vpdev_to_xdev(vpdev);
+
+	dma_unmap_phys(&xdev->pdev->dev, dma_addr, size, dir, attrs);
+}
+
+const struct dma_map_ops _plx_dma_ops = {
+	.map_phys = _plx_dma_map_phys,
+	.unmap_phys = _plx_dma_unmap_phys,
+};
+#else
 static dma_addr_t
 _plx_dma_map_page(struct device *dev, struct page *page,
 		  unsigned long offset, size_t size,
@@ -61,6 +88,7 @@ const struct dma_map_ops _plx_dma_ops = {
 	.map_page = _plx_dma_map_page,
 	.unmap_page = _plx_dma_unmap_page,
 };
+#endif
 
 /* Initialize the VCA bootparams */
 void plx_bootparam_init(struct plx_device *xdev)

@@ -1,3 +1,11 @@
+intel-vca2-host (2.3.26+ubuntu24.04.10) noble; urgency=medium
+
+  * Add Linux 7.x DKMS support for the dma_map_ops physical-address callback
+    ABI introduced in Linux 7.0.
+  * Preserve the pre-7.0 page-based DMA callback ABI.
+
+ -- Local VCA Maintainer <root@localhost>  Sat, 08 Aug 2026 10:00:00 +0800
+
 intel-vca2-host (2.3.26+ubuntu24.04.9) noble; urgency=medium
 
   * Add vca2-vcass-node-modules-dkms, a separate card-side DKMS package.

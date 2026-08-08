@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 NAME="vca2-vcass-node"
-VERSION="2.3.26+ubuntu24.04.9"
+VERSION="2.3.26+ubuntu24.04.10"
 case "$1" in
   remove|deconfigure)
     systemctl disable --now vca_agent.service >/dev/null 2>&1 || true

@@ -1,6 +1,6 @@
 # Intel VCA2 DKMS host stack
 
-This Debian source tree repackages Intel VCA 2.3.26 host software for Ubuntu 24.04 with local compatibility fixes. It supports both the Ubuntu 24.04 GA kernel line (Linux 6.8) and the Ubuntu 24.04 HWE 6.17 kernel line.
+This Debian source tree repackages Intel VCA 2.3.26 host software for Ubuntu 24.04 with local compatibility fixes. It supports the Ubuntu 24.04 GA kernel line (Linux 6.8), the HWE 6.17 line, and Linux 7.x kernels.
 
 It builds three binary packages:
 
@@ -14,8 +14,9 @@ It builds three binary packages:
 | --- | --- | --- |
 | GA | 6.8.x | legacy `bus_type.match` and `device_find_child()` callback ABIs; explicit `BLK_MQ_F_SHOULD_MERGE` |
 | HWE | 6.17.x | const-correct `bus_type.match` and `device_find_child()` callback ABIs; no removed merge flag |
+| Current | 7.x | Linux 6.18 IDA allocator shim and physical-address `dma_map_ops` callbacks |
 
-Linux 6.11 changed `struct bus_type.match` to pass a const driver pointer. Linux 6.14 constified `device_find_child()` and removed `BLK_MQ_F_SHOULD_MERGE`, because request merging is now enabled by default. The VCA sources select the correct callback signatures and block-layer flags at compile time, preserving the Linux 6.8 path while supporting Linux 6.17.
+Linux 6.11 changed `struct bus_type.match` to pass a const driver pointer. Linux 6.14 constified `device_find_child()` and removed `BLK_MQ_F_SHOULD_MERGE`, because request merging is now enabled by default. Linux 7.0 replaced the page-based `dma_map_ops` callbacks with physical-address callbacks. The VCA sources select the correct callback ABI at compile time and delegate all synthetic VOP DMA mappings to the real PLX PCI device.
 
 ## Build dependencies
 
@@ -43,9 +44,9 @@ or:
 Expected output in the parent directory:
 
 ```text
-vca2-vcass-modules-dkms_2.3.26+ubuntu24.04.8_all.deb
-daemon-vca_2.3.26+ubuntu24.04.8_amd64.deb
-vca2-host_2.3.26+ubuntu24.04.8_all.deb
+vca2-vcass-modules-dkms_2.3.26+ubuntu24.04.10_all.deb
+daemon-vca_2.3.26+ubuntu24.04.10_amd64.deb
+vca2-host_2.3.26+ubuntu24.04.10_all.deb
 ```
 
 ## Install
@@ -54,16 +55,16 @@ If an older local build is installed, remove it first:
 
 ```bash
 sudo apt remove 'vca2-*' daemon-vca
-sudo dkms remove -m vca2-vcass -v 2.3.26+ubuntu24.04.8 --all 2>/dev/null || true
+sudo dkms remove -m vca2-vcass -v 2.3.26+ubuntu24.04.10 --all 2>/dev/null || true
 ```
 
 Then install:
 
 ```bash
 sudo apt install \
-  ../vca2-vcass-modules-dkms_2.3.26+ubuntu24.04.8_all.deb \
-  ../daemon-vca_2.3.26+ubuntu24.04.8_amd64.deb \
-  ../vca2-host_2.3.26+ubuntu24.04.8_all.deb
+  ../vca2-vcass-modules-dkms_2.3.26+ubuntu24.04.10_all.deb \
+  ../daemon-vca_2.3.26+ubuntu24.04.10_amd64.deb \
+  ../vca2-host_2.3.26+ubuntu24.04.10_all.deb
 ```
 
 ## Load modules

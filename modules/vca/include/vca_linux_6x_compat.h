@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0
  * Compatibility shims for building Intel VCA 2.3.26 modules against
- * Ubuntu 24.04 GA (Linux 6.8) and HWE (Linux 6.17) kernels.
+ * Ubuntu 24.04 GA (Linux 6.8), HWE (Linux 6.17), and Linux 7.x kernels.
  */
 #ifndef VCA_LINUX_6X_COMPAT_H
 #define VCA_LINUX_6X_COMPAT_H

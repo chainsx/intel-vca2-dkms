@@ -42,8 +42,8 @@ Replaces:
 Description: Intel VCA2 host kernel modules as DKMS source
  This package installs the Intel Visual Compute Accelerator 2 host kernel
  module sources into /usr/src and registers them with DKMS.  It is based on
- Intel VCA 2.3.26 vcass modules with Ubuntu 24.04 Linux 6.8 and Linux 6.17 compatibility
- fixes, including the BlockIO port.
+ Intel VCA 2.3.26 vcass modules with Ubuntu 24.04 Linux 6.8, Linux 6.17,
+ and Linux 7.x compatibility fixes, including the BlockIO port.
  .
  The host-side package intentionally blacklists vca_csa because vca_csm owns
  /sys/class/vca on the host.
@@ -69,8 +69,8 @@ Description: Intel VCA2 node kernel modules and agent as DKMS source
  This package installs the Intel Visual Compute Accelerator 2 card-side
  module sources, VCA agent, module load ordering, and an initramfs hook.
  It is intended for a Linux system running inside a VCA2 node, not for the
- PCIe host.  The source supports Ubuntu 24.04 kernels 6.8 and 6.17 using
- VCA_BUILD_ROLE=node.
+ PCIe host. The source supports Ubuntu 24.04 kernels 6.8 and 6.17 plus
+ Linux 7.x using VCA_BUILD_ROLE=node.
  .
  The package must be installed into the node root filesystem before the
  node image is finalized, then update-initramfs must be run so the BlockIO
